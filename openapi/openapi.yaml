@@ -1,0 +1,25 @@
+openapi: 3.1.0
+info:
+  title: Career Agent OS API
+  version: 0.1.0
+paths:
+  /api/health:
+    get:
+      responses: { '200': { description: Healthy } }
+  /api/profile:
+    get:
+      responses: { '200': { description: Candidate profile } }
+    put:
+      responses: { '200': { description: Updated candidate profile } }
+  /api/profile/analysis:
+    get:
+      responses: { '200': { description: Structured candidate analysis } }
+  /api/listings:
+    get:
+      responses: { '200': { description: Listing search result } }
+  /api/listings/recommended:
+    get:
+      responses: { '200': { description: Explainably ranked listings } }
+  /api/pipeline:
+    get:
+      responses: { '200': { description: Candidate career pipeline } }

@@ -1,0 +1,40 @@
+const $=(q)=>document.querySelector(q); const $$=(q)=>[...document.querySelectorAll(q)];
+const state={profile:null,jobs:[],pipeline:[]};
+const api=async(path,options={})=>{const res=await fetch(path,{headers:{'content-type':'application/json',...(options.headers||{})},...options});const data=await res.json();if(!res.ok)throw new Error(data.error||'Request failed');return data};
+const money=n=>n?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n):'Not listed';
+const toast=(message)=>{const t=$('#toast');t.textContent=message;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)};
+
+async function boot(){
+  const [profile,recs,stats,pipeline]=await Promise.all([api('/api/profile'),api('/api/listings/recommended?limit=50'),api('/api/admin/stats'),api('/api/pipeline')]);
+  state.profile=profile;state.jobs=recs.items;state.pipeline=pipeline.items;
+  $('#candidate-name').textContent=profile.name;$('#candidate-headline').textContent=profile.headline;
+  $('#metric-jobs').textContent=stats.jobs;$('#metric-pipeline').textContent=stats.pipeline;$('#top-score').textContent=recs.items[0]?.match.score??'—';
+  renderJobs();renderPipeline();renderProfile();renderOps(stats);
+}
+
+function renderJobs(){
+  const q=$('#search').value.toLowerCase();const workplace=$('#workplace').value;
+  const jobs=state.jobs.filter(j=>(!q||`${j.title} ${j.company} ${j.description} ${j.skills.join(' ')}`.toLowerCase().includes(q))&&(!workplace||j.workplace===workplace));
+  $('#result-copy').textContent=`${jobs.length} ranked opportunities against your candidate intelligence.`;
+  $('#job-list').innerHTML=jobs.map(j=>`<article class="job" data-job="${j.id}"><div class="score">${j.match.score}</div><div><h4>${j.title}</h4><div class="job-company">${j.company}</div><div class="job-meta"><span class="tag">${j.workplace}</span><span class="tag">${j.location}</span><span class="tag">${money(j.salaryMin)}–${money(j.salaryMax)}</span></div><div class="job-reason">${j.match.reasons[0]||'Potential fit based on your profile.'}</div></div><div class="job-actions"><button class="btn ghost" data-save="${j.id}">Save</button><button class="btn primary" data-open="${j.id}">Review fit</button></div></article>`).join('')||'<div class="loading">No matching opportunities.</div>';
+  $$('[data-open]').forEach(b=>b.onclick=()=>openJob(b.dataset.open));
+  $$('[data-save]').forEach(b=>b.onclick=async(e)=>{e.stopPropagation();await api(`/api/listings/${b.dataset.save}/add`,{method:'POST',body:JSON.stringify({stage:'saved'})});toast('Added to pipeline');await reloadPipeline()});
+}
+
+function openJob(id){
+  const j=state.jobs.find(x=>x.id===id); if(!j)return;
+  const components=Object.entries(j.match.components).map(([k,v])=>`<div class="break"><span>${k}</span><b>${v}</b></div>`).join('');
+  $('#drawer').innerHTML=`<span class="pill mint">${j.match.score}% FIT</span><h2>${j.title}</h2><div class="drawer-sub">${j.company} · ${j.location} · ${j.workplace}</div><div class="match-breakdown">${components}</div><div class="drawer-section"><h4>Why this ranks</h4><ul>${j.match.reasons.map(x=>`<li>${x}</li>`).join('')}</ul></div><div class="drawer-section"><h4>Skill evidence</h4><div class="chips">${j.match.matchedSkills.map(x=>`<span class="skill">${x}</span>`).join('')}</div>${j.match.gaps.length?`<p>Potential gaps: ${j.match.gaps.join(', ')}</p>`:''}</div><div class="drawer-section"><h4>Role summary</h4><p>${j.description}</p></div><div class="drawer-section"><h4>Compensation</h4><p>${money(j.salaryMin)} – ${money(j.salaryMax)}</p></div><div id="pack-output"></div><div class="drawer-actions"><button class="btn secondary" id="save-drawer">Save opportunity</button><button class="btn primary" id="generate-pack">Generate application pack</button></div>`;
+  $('#drawer-wrap').classList.add('open');$('#drawer-wrap').setAttribute('aria-hidden','false');
+  $('#save-drawer').onclick=async()=>{await api(`/api/listings/${id}/add`,{method:'POST',body:JSON.stringify({stage:'saved'})});toast('Added to pipeline');await reloadPipeline()};
+  $('#generate-pack').onclick=async()=>{const btn=$('#generate-pack');btn.textContent='Generating…';btn.disabled=true;try{const pack=await api(`/api/jobs/${id}/pack`,{method:'POST',body:'{}'});$('#pack-output').innerHTML=`<div class="drawer-section"><h4>Tailored resume summary</h4><div class="pack">${pack.tailoredResume.summary}</div><h4>Cover letter</h4><div class="pack">${pack.coverLetter}</div><p>Claim verification: <b>${pack.verification.status}</b></p><button class="btn primary" id="dry-apply">Run application dry-run</button></div>`;$('#dry-apply').onclick=async()=>{const a=await api(`/api/jobs/${id}/apply`,{method:'POST',body:'{}'});toast(`Application agent: ${a.status}`);await reloadPipeline()};toast('Application pack generated');await reloadPipeline()}finally{btn.textContent='Generate application pack';btn.disabled=false}};
+}
+
+async function reloadPipeline(){const p=await api('/api/pipeline');state.pipeline=p.items;$('#metric-pipeline').textContent=p.items.length;renderPipeline()}
+function renderPipeline(){const stages=[['saved','Saved'],['pack_ready','Pack ready'],['ready_to_apply','Ready'],['applied','Applied'],['interview','Interview']];$('#pipeline-board').innerHTML=stages.map(([stage,label])=>{const items=state.pipeline.filter(x=>x.stage===stage);return `<div class="column"><div class="column-head"><span>${label}</span><b>${items.length}</b></div>${items.map(x=>`<div class="pipe-card"><b>${x.listing.title}</b><span>${x.listing.company}</span><button class="btn ghost" data-advance="${x.id}" data-stage="${stage}">Advance</button></div>`).join('')}</div>`}).join('');$$('[data-advance]').forEach(b=>b.onclick=async()=>{const order=stages.map(x=>x[0]);const next=order[Math.min(order.length-1,order.indexOf(b.dataset.stage)+1)];await api(`/api/pipeline/${b.dataset.advance}`,{method:'PATCH',body:JSON.stringify({stage:next})});await reloadPipeline()})}
+function renderProfile(){const p=state.profile;$('#profile-content').innerHTML=`<div class="kv"><label>Headline</label><b>${p.headline}</b></div><div class="kv"><label>Location</label><span>${p.location}</span></div><div class="kv"><label>Seniority</label><span>${p.seniority} · ${p.yearsExperience} years</span></div><div class="kv"><label>Skills</label><div class="chips">${p.skills.map(x=>`<span class="skill">${x}</span>`).join('')}</div></div><div class="kv"><label>Target roles</label><span>${p.targetRoles.join(' · ')}</span></div>${p.experience.map(x=>`<div class="experience"><b>${x.title} — ${x.company}</b><p>${x.highlight}</p></div>`).join('')}`;$('#preference-content').innerHTML=`<div class="kv"><label>Workplace</label><span>${p.preferences.workplace.join(', ')}</span></div><div class="kv"><label>Locations</label><span>${p.preferences.locations.join(', ')}</span></div><div class="kv"><label>Salary floor</label><b>${money(p.preferences.salary.min)}</b></div><div class="kv"><label>Relocation</label><span>${p.preferences.relocate?'Open':'No'}</span></div>`}
+function renderOps(stats){$('#ops-grid').innerHTML=[['Jobs',stats.jobs],['Pipeline',stats.pipeline],['Generated packs',stats.packs],['Apply attempts',stats.attempts]].map(([l,v])=>`<div class="op"><strong>${v}</strong><span>${l}</span></div>`).join('')}
+$$('.nav').forEach(n=>n.onclick=()=>{$$('.nav').forEach(x=>x.classList.toggle('active',x===n));$$('.view').forEach(v=>v.classList.toggle('active',v.id===n.dataset.view));$('#view-title').textContent={discover:'Discover opportunities',pipeline:'Application pipeline',profile:'Candidate profile',ops:'Platform operations'}[n.dataset.view]});
+$$('[data-close]').forEach(x=>x.onclick=()=>{$('#drawer-wrap').classList.remove('open');$('#drawer-wrap').setAttribute('aria-hidden','true')});
+$('#search').addEventListener('input',renderJobs);$('#workplace').addEventListener('change',renderJobs);$('#refresh').onclick=()=>boot().then(()=>toast('Career state refreshed'));
+boot().catch(e=>{$('#job-list').innerHTML=`<div class="loading">${e.message}</div>`;console.error(e)});

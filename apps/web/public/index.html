@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0a0b0d" />
+  <title>Career Agent OS</title>
+  <meta name="description" content="Explainable job matching, application packs, and career pipeline intelligence." />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brandmark">C</span><span>Career Agent</span><small>OS</small></div>
+      <nav>
+        <button class="nav active" data-view="discover"><span>⌁</span> Discover</button>
+        <button class="nav" data-view="pipeline"><span>◇</span> Pipeline</button>
+        <button class="nav" data-view="profile"><span>◉</span> Profile</button>
+        <button class="nav" data-view="ops"><span>⌘</span> Operations</button>
+      </nav>
+      <div class="side-note"><b>Agent-ready core</b><p>Persistent state first. UI, API and future MCP agents share the same career graph.</p></div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div><div class="eyebrow">CAREER COMMAND CENTER</div><h1 id="view-title">Discover opportunities</h1></div>
+        <div class="profile-chip"><div class="avatar">AM</div><div><b id="candidate-name">Candidate</b><span id="candidate-headline">Loading profile…</span></div></div>
+      </header>
+
+      <section id="discover" class="view active">
+        <div class="hero-grid">
+          <article class="hero-card">
+            <div class="hero-copy"><span class="pill mint">LIVE MATCHING</span><h2>Your market, ranked by evidence.</h2><p>Every score is decomposed into skills, role alignment, seniority, workplace, location and compensation—not invented by an LLM.</p></div>
+            <div class="hero-score"><span id="top-score">—</span><small>top match</small></div>
+          </article>
+          <article class="mini-card"><span class="metric-label">ACTIVE JOBS</span><strong id="metric-jobs">—</strong><small>normalized listings</small></article>
+          <article class="mini-card"><span class="metric-label">IN PIPELINE</span><strong id="metric-pipeline">—</strong><small>career opportunities</small></article>
+        </div>
+        <div class="toolbar"><div class="search"><span>⌕</span><input id="search" placeholder="Search role, company, skill…" /></div><select id="workplace"><option value="">All work modes</option><option>remote</option><option>hybrid</option><option>onsite</option></select><button class="btn secondary" id="refresh">Refresh</button></div>
+        <div class="section-heading"><div><h3>Recommended for you</h3><p id="result-copy">Ranked against your candidate intelligence.</p></div><span class="legend">Explainable fit score</span></div>
+        <div id="job-list" class="job-list"><div class="loading">Loading opportunities…</div></div>
+      </section>
+
+      <section id="pipeline" class="view">
+        <div class="section-heading"><div><h3>Application pipeline</h3><p>Persistent state from saved opportunity through interview and offer.</p></div></div>
+        <div id="pipeline-board" class="pipeline-board"></div>
+      </section>
+
+      <section id="profile" class="view">
+        <div class="profile-layout"><article class="panel"><div class="section-heading"><div><h3>Candidate intelligence</h3><p>Structured evidence used by matching and generation.</p></div></div><div id="profile-content"></div></article><article class="panel"><div class="section-heading"><div><h3>Preference policy</h3><p>Hard constraints and ranking signals.</p></div></div><div id="preference-content"></div></article></div>
+      </section>
+
+      <section id="ops" class="view">
+        <div class="section-heading"><div><h3>Operations</h3><p>Job corpus and execution readiness.</p></div></div><div id="ops-grid" class="ops-grid"></div>
+        <article class="panel top-gap"><h3>Production gates</h3><div class="gate-list"><div><span class="gate ready"></span><b>Candidate state</b><small>persisted</small></div><div><span class="gate ready"></span><b>Matching engine</b><small>explainable</small></div><div><span class="gate ready"></span><b>Application packs</b><small>evidence-bound</small></div><div><span class="gate warn"></span><b>Live ATS submission</b><small>policy-gated</small></div><div><span class="gate warn"></span><b>Email/recruiter ingestion</b><small>next phase</small></div></div></article>
+      </section>
+    </main>
+  </div>
+
+  <div class="drawer-wrap" id="drawer-wrap" aria-hidden="true"><div class="backdrop" data-close></div><aside class="drawer"><button class="drawer-close" data-close>×</button><div id="drawer"></div></aside></div>
+  <div id="toast" class="toast"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

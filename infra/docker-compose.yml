@@ -1,0 +1,27 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+    ports:
+      - "4310:4310"
+    environment:
+      PORT: 4310
+      DATABASE_PATH: /data/career-agent.db
+      AUTO_APPLY_MODE: dry-run
+    volumes:
+      - career_agent_data:/data
+  postgres:
+    image: postgres:17-alpine
+    profiles: ["production-db"]
+    environment:
+      POSTGRES_USER: career
+      POSTGRES_PASSWORD: career
+      POSTGRES_DB: career_agent
+    ports:
+      - "5432:5432"
+    volumes:
+      - career_agent_postgres:/var/lib/postgresql/data
+volumes:
+  career_agent_data:
+  career_agent_postgres:
