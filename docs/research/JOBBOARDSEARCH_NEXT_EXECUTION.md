@@ -1,5 +1,7 @@
 # JobBoardSearch Donor — Immediate Execution Sequence
 
+Status: **READY FOR GATE 0 IMPLEMENTATION**
+
 This is the handoff from reverse engineering to implementation. It is intentionally ordered by dependency, not UI visibility.
 
 ## 1. First implementation target: canonical identity/provenance
@@ -96,3 +98,7 @@ Pause implementation if:
 - an SEO/AI score cannot point to evidence;
 - Search Console asks for write scopes;
 - a donor detail is only inferred but is being presented as observed fact.
+
+## Supervisor handoff
+
+The next implementation agent should receive only WP-0 from `JOBBOARDSEARCH_WORK_PACKAGES.md`, the domain/schema files it owns, and the Gate 0 benchmark fixtures. It should not receive responsibility for RSS parsing, distribution, SEO, Search Console or UI until WP-0 acceptance is proven.
