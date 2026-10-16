@@ -1,6 +1,6 @@
 # JobBoardSearch REA — Evidence, Capability Map, and Clean-Room Integration
 
-Status: **active research**  
+Status: **implementation-ready research**  
 Target: `https://jobboardsearch.com`  
 Seed evidence: Reddit share `https://www.reddit.com/r/jobboardsearch/s/OiuzJbg0MO`  
 Captured: 2026-10-16
@@ -15,7 +15,12 @@ JobBoardSearch contributes a valuable missing layer: **job-board discovery, boar
 
 Canonical branch: `research/jobboardsearch`.
 
-Detailed clean-room system reconstruction: `docs/research/JOBBOARDSEARCH_SYSTEM_DESIGN.md`.
+Detailed artifacts:
+
+- `docs/research/JOBBOARDSEARCH_SYSTEM_DESIGN.md` — clean-room system reconstruction and owned architecture.
+- `docs/research/JOBBOARDSEARCH_EVIDENCE_MATRIX.md` — observed-vs-claimed-vs-inferred evidence classification.
+- `docs/research/JOBBOARDSEARCH_WORK_PACKAGES.md` — bounded implementation ownership and acceptance tests.
+- `docs/research/JOBBOARDSEARCH_NEXT_EXECUTION.md` — dependency-ordered implementation handoff.
 
 ## 2. What the Reddit post actually is
 
@@ -486,4 +491,4 @@ The owned differentiation becomes:
 
 `candidate intelligence + board intelligence + provenance-safe job network + explainable matching + verified application artifacts + governed application execution + multi-channel distribution + placement attribution + operator intelligence`.
 
-This is a stronger product boundary than a directory clone and fits the Self Working Agent / REA roadmap.
+The reverse-engineering phase is sufficiently complete to begin Gate 0 implementation. New donor research should now be triggered only by an unresolved implementation question or new public evidence, not used as a reason to delay building.
