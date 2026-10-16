@@ -1,16 +1,30 @@
-# Clean-room reverse-engineering notes
+# Reverse Engineering Notes
 
-This project re-implements a product pattern based on public product behavior, not proprietary source code.
+## Clean-room rule
 
-Observed category capabilities that informed the architecture include candidate profile analysis, job recommendations, a persistent application pipeline, role-specific resume/cover-letter generation, automated application workflows, and API/MCP-style agent access.
+Reverse engineer public behavior, information architecture, workflows, and product patterns. Do not copy proprietary source code, private APIs, prompts, assets, or authenticated implementation details.
 
-The implementation decisions in this repository are original:
+## Active donor: JobBoardSearch
 
-- deterministic explainable match scoring
-- evidence-bound generation boundary
-- local Node SQLite runtime
-- production PostgreSQL schema
-- connector interface and ingestion worker
-- dry-run-by-default application execution policy
+Seed: https://www.reddit.com/r/jobboardsearch/s/OiuzJbg0MO
 
-No private Dreamwork HQ implementation details are assumed or represented as facts.
+Routing: **donor/reference extension of Career Agent OS; no new standalone repository.**
+
+Evidence branch: `research/jobboardsearch`
+
+Primary research:
+
+- `docs/research/JOBBOARDSEARCH_REA.md`
+- `docs/research/JOBBOARDSEARCH_SYSTEM_DESIGN.md`
+
+Key reverse-engineering result:
+
+JobBoardSearch is not merely a directory or isolated Reddit posting bot. Public evidence shows a flywheel spanning board discovery, board review, API/RSS feed ingestion, job publishing, programmatic discovery/SEO, multi-channel job distribution, newsletter/community audience, outbound attribution, sponsorship inventory, operator SEO/Search Console tooling and a job-board marketplace.
+
+Critical Career Agent OS prerequisite discovered:
+
+The current source-dependent listing identity and single-source listing schema are insufficient for multi-board aggregation. Before expanding feed ingestion, implement immutable source records, source-independent canonical vacancy identity, many-to-many provenance links and replayable dedupe evidence.
+
+Seed-post evidence:
+
+The Oct 15, 2026 Reddit post advertises a Senior Platform Engineer vacancy, labels it Senior / engineer / devops / fulltime / python / golang, and links through a JobBoardSearch redirect carrying `utm_source=reddit`, `utm_medium=bot`, `utm_term=devopsjobs.com`, plus an encoded destination resolving to the upstream DevOpsJobs job URL. Treat this as direct evidence of automated channel distribution + source attribution behavior.
