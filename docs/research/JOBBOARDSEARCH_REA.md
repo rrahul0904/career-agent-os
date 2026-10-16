@@ -11,25 +11,51 @@ Captured: 2026-10-16
 
 Do **not** create a new standalone repository for this target. The job-seeker side overlaps Career Agent OS's existing product boundary: persistent candidate intelligence, live job ingestion, explainable matching, application-pack generation, pipeline tracking, dry-run auto-apply, and agent-ready APIs.
 
-JobBoardSearch contributes a valuable missing layer: **job-board discovery, board metadata, feed aggregation, multi-channel distribution, operator growth tooling, and board-marketplace intelligence**.
+JobBoardSearch contributes a valuable missing layer: **job-board discovery, board metadata, feed aggregation, multi-channel distribution, operator growth tooling, sponsorship inventory, attribution, and board-marketplace intelligence**.
 
 Canonical branch: `research/jobboardsearch`.
 
+Detailed clean-room system reconstruction: `docs/research/JOBBOARDSEARCH_SYSTEM_DESIGN.md`.
+
 ## 2. What the Reddit post actually is
 
-The shared Reddit item is an automatically distributed job listing. It advertises a Senior Platform Engineer role and routes the click through `jobboardsearch.com/redirect`, with UTM parameters identifying Reddit/bot distribution and the upstream board domain.
+The shared Reddit item is an automatically distributed job listing. It routes the click through JobBoardSearch rather than behaving as an isolated manual post.
 
 This is evidence of a distribution pipeline, not just a static directory:
 
 1. ingest job from a source board;
 2. normalize title/company/location/date/category metadata;
-3. publish a Reddit link post;
-4. route outbound apply traffic through a redirect endpoint;
+3. publish a channel-specific job announcement;
+4. route outbound traffic through a controlled destination;
 5. attribute traffic back to channel/source/board.
 
-Public founder material from 2022 also describes a cron-driven Reddit bot posting jobs repeatedly via Reddit's API, confirming that automated social distribution is a long-running growth primitive.
+The subreddit itself contains repeated machine-like job announcements over time, reinforcing the interpretation that Reddit is an ongoing distribution surface rather than a one-off campaign.
 
-## 3. Observed product surfaces
+## 3. Current evidence snapshot — 2026-10-16
+
+Public surfaces currently show approximately:
+
+- **870 job boards** in the directory;
+- **118,594 page views in the preceding 30 days** and **3,363,777 year-to-date page views** on the board-submission surface;
+- **27,660 Reddit members**;
+- **5,891 Telegram members** on the current submission page;
+- **~15.8K weekly newsletter subscribers**;
+- **1K+ LinkedIn followers**;
+- **1,005 Bluesky followers**.
+
+The board submission form explicitly accepts an **API or RSS URL**. Feed-enabled boards are told their jobs may be:
+
+- displayed on JobBoardSearch;
+- posted to Telegram;
+- posted to the JobBoardSearch subreddit;
+- included in the weekly newsletter;
+- indexed through the Google for Jobs ecosystem.
+
+The same surface exposes monetized distribution inventory, including highlighted/sticky/featured directory placements, fixed Gold/Silver/Bronze sponsor slots, newsletter placement, community pinning, backlink benefits, larger job-ingestion quotas, directory-submission services and SEO packages.
+
+These numbers and offers are time-sensitive public product evidence, not constants to hard-code into our product.
+
+## 4. Observed product surfaces
 
 ### A. Job-board discovery directory
 
@@ -40,6 +66,7 @@ Observed public behavior:
 - Bookmarks / saved boards.
 - Dedicated board pages and cross-linked job pages.
 - Search / filtering and SEO-oriented landing pages for job categories and countries.
+- Hand-reviewed/curated positioning rather than an unbounded automatically generated list.
 
 ### B. Job ingestion and job discovery
 
@@ -48,7 +75,7 @@ Observed public behavior:
 - JobBoardSearch states that boards can provide an **API or RSS feed**.
 - Jobs are fetched and displayed on JobBoardSearch pages.
 - Jobs are categorized into role, seniority, technology, geography, remote status, recency, etc.
-- The Reddit evidence shows outbound redirect attribution to the upstream source board.
+- Feed-enabled sponsorship tiers advertise larger quantities of recent jobs listed/indexed.
 
 ### C. Multi-channel distribution engine
 
@@ -61,27 +88,51 @@ Observed channels include:
 - newsletter/email
 - Google for Jobs / structured-data discovery
 
-The important reusable pattern is `Job -> DistributionAsset -> ChannelPublishAttempt -> AttributionReceipt`.
+The important reusable pattern is:
+
+`CanonicalJob -> DistributionAsset -> PublishAttempt -> ProviderReceipt -> AttributionReceipt`.
 
 ### D. Job-board operator acquisition + monetization
 
 Observed monetization primitives:
 
-- free permanent listing after approval;
-- featured placements from ~$19/month;
-- priority ranking / highlighted placements;
+- free listing after review;
+- highlighted/brand-color/sticky/featured placement;
+- fixed premium sponsor slots;
 - newsletter inclusion;
+- community pinning;
 - additional job indexing / cross-posting volume;
 - do-follow backlink / SEO value;
 - sponsorship/ad slots;
-- SEO services and directory-submission services.
+- SEO services;
+- directory-submission services;
+- Search Console AI subscriptions/credits;
+- Job Visuals AI usage/top-ups.
 
-This is a two-sided business:
+This is a two-sided-plus-operator business:
 
 - **job seeker value:** discover specialized boards and jobs;
-- **operator value:** acquire traffic, authority, distribution and customers.
+- **operator value:** acquire traffic, authority, distribution and customers;
+- **platform value:** aggregate inventory, own distribution surfaces, measure referrals, then sell placement/tools/services.
 
-### E. Job-board marketplace
+### E. Sponsorship inventory as a first-class system
+
+A major confirmed pattern is that promotion is sold across multiple finite surfaces, not merely as `featured=true`.
+
+Observed examples include:
+
+- fixed top directory/search positions;
+- visual highlight treatment;
+- pinned Reddit placement;
+- pinned Telegram placement;
+- weekly newsletter mentions;
+- direct-link/visit treatment;
+- feed-ingestion quotas by sponsor tier;
+- month-specific sponsor slots that can sell out.
+
+Our owned implementation should therefore model **placement inventory + campaigns + attribution**, not just a premium boolean.
+
+### F. Job-board marketplace
 
 Marketplace listings expose operator/business diligence fields such as:
 
@@ -99,7 +150,7 @@ Marketplace listings expose operator/business diligence fields such as:
 
 This is useful as a separate `BoardBusinessProfile` domain model and can later support acquisition scouting / opportunity intelligence.
 
-### F. Operator SEO / growth tooling
+### G. Operator SEO / growth tooling
 
 Observed tools include:
 
@@ -112,19 +163,31 @@ Observed tools include:
 - Search Console AI;
 - directory submission tooling.
 
-The SEO analyzer checks job-specific signals: apply actions, salary, company, location, remote markers and `JobPosting` structured data, in addition to ordinary meta/indexing/content checks.
+The SEO analyzer currently groups checks around:
 
-Search Console AI adds:
+1. meta/indexing — title, meta description, canonical, robots, viewport;
+2. content structure — H1, H2 count, word count, internal links;
+3. job-page signals — apply actions, salary, company, location, remote signal;
+4. schema — JobPosting and important structured-data fields.
 
-- 12 months of Search Console data;
-- "striking distance" queries (roughly positions 5–20);
+### H. Search Console AI
+
+Current public behavior includes:
+
+- 12 months of Search Console data in a sync;
+- read-only access;
+- striking-distance queries around positions 5–20;
+- query/page history with clicks, impressions and position;
 - content-gap analysis;
-- low CTR / cannibalization / query-page mismatch analysis;
-- sitemap-aware recommendations;
-- Google for Jobs traffic reporting;
-- expired-page / traffic-drop detection.
+- low-CTR, cannibalization and query/page mismatch analysis;
+- sitemap-aware suppression of already-existing pages;
+- Google for Jobs traffic reporting and drop alerts;
+- expired-job checks for high-traffic pages;
+- automatic monitoring comparing the latest 28 days with the prior 28 days.
 
-### G. Job Visuals AI
+This is a strong donor pattern because it is specialized for expiring job inventory rather than generic website SEO.
+
+### I. Job Visuals AI
 
 Observed operator workflow:
 
@@ -134,32 +197,21 @@ Observed operator workflow:
 4. generate platform-specific captions;
 5. track usage/top-ups.
 
-This overlaps our Creator Console / Product Tutorial distribution pattern and should be treated as an integration point, not rebuilt inside the career core.
+This overlaps our Creator Console direction and should be treated as an integration point, not rebuilt inside the career core.
 
-### H. Auto-apply / JobCopilot
+### J. Auto-apply / JobCopilot
 
-The JobBoardSearch navigation exposes "Auto Apply", but the CTA routes to `jobboardsearch.jobcopilot.com` and the page is branded JobCopilot. Treat this as **external/partner/white-label behavior unless stronger provenance proves ownership**.
+The JobBoardSearch navigation exposes "Auto Apply", but the CTA routes to a JobCopilot-branded product. Treat this as **external/partner/white-label behavior unless stronger provenance proves ownership**.
 
-Observed behavior worth benchmarking independently:
+Career Agent OS already owns the correct clean-room boundary for candidate-side application automation.
 
-- user search preferences;
-- resume/profile upload;
-- screening-question knowledge base;
-- frequent job scanning;
-- automatic application attempts;
-- application confirmation + tracker;
-- editable AI answers;
-- application-volume controls.
+## 5. Historical architecture evidence
 
-Career Agent OS already owns the correct clean-room boundary for these capabilities; do not copy JobCopilot implementation or claims.
+Public founder material states the project began as a very small directory built rapidly and then expanded over time. That is historical evidence only; do **not** infer the current production stack from the launch implementation.
 
-## 4. Historical architecture evidence
+The reusable lesson is architectural, not technological: start with a simple curated directory, then compound value through feeds, programmatic discovery, social distribution, operator monetization, and adjacent tools.
 
-Public founder retrospectives say the first version was built rapidly as a single `index.php` using plain PHP/HTML/CSS/JavaScript plus a small amount of jQuery. That is historical evidence only; do **not** assume it represents the current production stack.
-
-The reusable lesson is architectural, not technological: start with a simple curated directory, then compound value through feeds, programmatic SEO, social distribution, operator monetization, and adjacent tools.
-
-## 5. Growth loop reconstructed
+## 6. Growth loop reconstructed
 
 ```text
 Board submission / discovery
@@ -168,7 +220,7 @@ Manual review + BoardProfile
         ↓
 API/RSS feed connection
         ↓
-Job ingestion + normalization + dedupe
+Source records + normalization + cross-source dedupe
         ↓
 Search / category / country landing pages
         ↓
@@ -176,19 +228,19 @@ Structured data + programmatic SEO
         ↓
 Reddit / Telegram / LinkedIn / Bluesky / newsletter distribution
         ↓
-Tracked outbound redirect
+Tracked outbound destination
         ↓
 Referral traffic + operator ROI evidence
         ↓
-Featured listing / sponsorship / growth tools
+Featured placement / sponsorship / tools / services
         ↓
-More boards + more jobs + more SEO inventory
+More boards + more jobs + more audience inventory
         ↺
 ```
 
 This is the most important donor pattern.
 
-## 6. Gap analysis vs Career Agent OS
+## 7. Gap analysis vs Career Agent OS
 
 ### Already owned
 
@@ -203,20 +255,35 @@ This is the most important donor pattern.
 - API / MCP surface;
 - PostgreSQL production schema.
 
+### Critical architecture correction discovered
+
+The existing `stableListingId()` includes the source in the ID input, and the current production `listings` table stores a single `source_id`.
+
+That is insufficient for an aggregator. The same employer vacancy can arrive through Greenhouse, an RSS feed, another niche board and an API partner. We need:
+
+1. immutable/source-specific `SourceRecord` objects;
+2. source-independent `CanonicalJob` identity;
+3. many-to-many `JobSourceLink` provenance;
+4. auditable dedupe/merge evidence.
+
+**This becomes Gate 0. Do not scale RSS/API ingestion until it is fixed.**
+
 ### Missing / high-value additions from this donor
 
-1. **JobBoard Registry** — canonical board metadata, taxonomy, provenance and health.
-2. **Feed Connector Contract** — RSS/API/sitemap/ATS adapters with sync receipts.
-3. **Board + Job Taxonomy Graph** — niche/location/role/stack/work-style facets.
-4. **Redirect + Attribution Service** — click receipts by job/board/channel/campaign.
-5. **Distribution Engine** — transform canonical jobs into channel-specific assets and publish receipts.
-6. **Programmatic SEO Surface** — category/location/stack/level landing pages with canonical rules and structured data.
-7. **Board Operator Workspace** — submit/claim/configure board, feed health, distribution status and referral analytics.
-8. **JobPosting Quality Analyzer** — schema/content/indexability validation specialized for jobs.
-9. **Search Console Intelligence Adapter** — read-only GSC ingestion and opportunity analysis.
-10. **Board Marketplace Intelligence** — optional later module; separate from seeker core.
+1. **Cross-source canonical identity + provenance** — prerequisite.
+2. **JobBoard Registry** — canonical board metadata, taxonomy, provenance and health.
+3. **Feed Connector Contract** — RSS/Atom/API/sitemap/ATS adapters with sync receipts.
+4. **Board + Job Taxonomy Graph** — niche/location/role/stack/work-style facets.
+5. **Redirect + Attribution Service** — click receipts by job/board/channel/campaign.
+6. **Distribution Engine** — transform canonical jobs into channel-specific assets and publish receipts.
+7. **Programmatic Discovery/SEO Surface** — approved category/location/stack/level landing pages with crawl controls.
+8. **Board Operator Workspace** — submit/claim/configure board, feed health, distribution status and referral analytics.
+9. **Placement Inventory + Campaigns** — explicit finite promotion surfaces and ROI.
+10. **JobPosting Quality Analyzer** — schema/content/indexability validation specialized for jobs.
+11. **Search Console Intelligence Adapter** — read-only GSC ingestion and opportunity analysis.
+12. **Board Marketplace Intelligence** — optional later module; separate from seeker core.
 
-## 7. Proposed owned domain contracts
+## 8. Proposed owned domain contracts
 
 ```ts
 interface JobBoardProfile {
@@ -234,14 +301,21 @@ interface JobBoardProfile {
   feedConnections: FeedConnection[];
 }
 
-interface FeedConnection {
+interface SourceRecord {
   id: string;
-  boardId: string;
-  kind: 'rss' | 'api' | 'sitemap' | 'greenhouse' | 'lever' | 'custom';
-  endpoint: string;
-  enabled: boolean;
-  lastSyncAt?: string;
-  health: 'unknown' | 'healthy' | 'degraded' | 'failed';
+  connectionId: string;
+  externalId?: string;
+  sourceUrl: string;
+  fetchedAt: string;
+  contentHash: string;
+  rawPayload: unknown;
+}
+
+interface JobSourceLink {
+  canonicalJobId: string;
+  sourceRecordId: string;
+  confidence: number;
+  matchSignals: string[];
 }
 
 interface DistributionReceipt {
@@ -266,7 +340,9 @@ interface AttributionReceipt {
 }
 ```
 
-## 8. Clean-room rules
+See `JOBBOARDSEARCH_SYSTEM_DESIGN.md` for the complete target model.
+
+## 9. Clean-room rules
 
 - Use only publicly observable behavior and public founder material as evidence.
 - Do not scrape private dashboards, bypass auth, copy proprietary text/assets, or reproduce private APIs.
@@ -276,31 +352,44 @@ interface AttributionReceipt {
 - Provider writes (social posting, Search Console access, email delivery) require explicit credentials and approval gates.
 - Default all application submission and social publish flows to dry-run / prepared receipts until enabled by policy.
 
-## 9. Build slices
+## 10. Build gates
 
-### Slice 1 — Registry + ingestion foundation
+### Gate 0 — canonical identity + provenance
 
-- `JobBoardProfile` domain model and persistence.
-- board submission/import endpoint.
-- RSS generic adapter.
-- normalize/dedupe jobs from board feeds.
-- feed sync receipts + health state.
+- add `SourceRecord` persistence;
+- create source-independent canonical vacancy identity;
+- add many-to-many source links;
+- produce deterministic dedupe receipts;
+- create benchmark duplicates across ATS + RSS.
+
+Acceptance:
+
+- same vacancy from different sources collapses to one canonical job;
+- genuinely different jobs with same title/company do not collapse;
+- every merge is replayable from stored evidence;
+- source provenance survives canonicalization.
+
+### Gate 1 — Registry + ingestion foundation
+
+- `JobBoardProfile` domain model and persistence;
+- board submission/import endpoint;
+- RSS/Atom generic adapter;
+- feed sync receipts + health state;
 - searchable board directory API.
 
 Acceptance:
 
-- seed at least 10 synthetic/public boards;
+- seed at least 10 synthetic/public board fixtures;
 - sync at least 3 heterogeneous feed fixtures;
-- duplicate job fixture collapses deterministically;
 - failed feed produces inspectable failure receipt;
-- board provenance survives normalization.
+- SSRF/size/time protections are tested.
 
-### Slice 2 — Discovery + attribution
+### Gate 2 — Discovery + attribution
 
 - board directory UI;
 - board detail page;
 - jobs-by-board and jobs-by-facet views;
-- redirect service with signed/opaque destination token;
+- controlled redirect service using opaque server-side destination IDs;
 - attribution receipts.
 
 Acceptance:
@@ -310,7 +399,7 @@ Acceptance:
 - click receipt links to board/job/campaign;
 - directory search returns stable facet counts.
 
-### Slice 3 — Distribution fabric
+### Gate 3 — Distribution fabric
 
 - neutral `DistributionAsset` contract;
 - Reddit/Telegram/email adapters first;
@@ -324,27 +413,31 @@ Acceptance:
 - failed publish is retryable/idempotent;
 - successful publish stores external receipt.
 
-### Slice 4 — Job SEO quality engine
+### Gate 4 — Job SEO quality engine
 
 - `JobPosting` schema validator;
 - title/meta/canonical/robots/H1/content checks;
 - apply/salary/company/location/remote checks;
+- freshness/dead-job rules;
 - machine-readable audit output + UI scorecard.
 
 Acceptance:
 
 - deterministic fixture score;
 - malformed JSON-LD is caught;
-- missing salary/location/apply action are separately surfaced;
+- schema vs visible-page mismatches are surfaced;
+- expired-but-open jobs are detected;
 - no generic SEO recommendation without evidence.
 
-### Slice 5 — Operator intelligence
+### Gate 5 — Operator intelligence
 
 - read-only Search Console adapter;
 - query/page history model;
 - striking-distance analysis;
 - low-CTR/cannibalization/content-gap rules;
-- traffic-drop alerts.
+- Google for Jobs traffic/drop rules;
+- expired-page traffic analysis;
+- 28-day comparison monitoring.
 
 Acceptance:
 
@@ -353,12 +446,44 @@ Acceptance:
 - every recommendation cites the query/page evidence used;
 - sitemap-aware suppression prevents duplicate page suggestions.
 
-## 10. Recommendation
+### Gate 6 — sponsorship inventory + ROI
 
-**Absorb the distribution/registry/SEO intelligence patterns into Career Agent OS; do not clone JobBoardSearch as a separate product.**
+- `InventoryPlacement` and `Campaign` models;
+- directory/newsletter/community/feed-quota placements;
+- finite capacity and schedule rules;
+- placement-level attribution and ROI reporting.
 
-The owned differentiation should become:
+Acceptance:
 
-`candidate intelligence + board intelligence + job ingestion + explainable matching + verified application artifacts + governed application execution + operator-grade distribution/attribution`.
+- overlapping exclusive slots cannot both activate;
+- campaign attribution resolves to placement + board + channel;
+- expiry automatically removes privileged placement;
+- pricing remains a configurable business policy, not domain logic.
 
-That is a materially stronger product boundary than a directory clone and fits the existing Self Working Agent roadmap.
+## 11. Benchmark fixtures required
+
+1. same vacancy in Greenhouse + RSS;
+2. same title/company but different locations;
+3. reposted vacancy with new source ID;
+4. malformed RSS;
+5. valid Atom feed;
+6. feed timeout/500;
+7. job removed between syncs;
+8. malicious internal-network feed URL;
+9. open-redirect attack input;
+10. duplicate social publish retry;
+11. malformed JobPosting JSON-LD;
+12. visible salary/schema salary mismatch;
+13. expired job still marked open;
+14. Search Console query with two competing pages;
+15. suggested landing page already in sitemap.
+
+## 12. Recommendation
+
+**Absorb the distribution/registry/attribution/operator-intelligence patterns into Career Agent OS; do not clone JobBoardSearch as a separate product.**
+
+The owned differentiation becomes:
+
+`candidate intelligence + board intelligence + provenance-safe job network + explainable matching + verified application artifacts + governed application execution + multi-channel distribution + placement attribution + operator intelligence`.
+
+This is a stronger product boundary than a directory clone and fits the Self Working Agent / REA roadmap.
